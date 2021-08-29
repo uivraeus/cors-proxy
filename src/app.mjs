@@ -40,12 +40,14 @@ app.all(`${apiRoute}*`, function (req, res, next) {
   const ip = req.ip;
   const ipFW = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
 
-  // Set CORS headers:
   const origin = req.header('origin');
-  if (isAllowedOrigin(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Methods", "GET");
-    res.header("Access-Control-Allow-Headers", req.header('access-control-request-headers'));
+  if (!origin ||isAllowedOrigin(origin)) {
+    if (origin) {
+      // Set CORS headers:
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Methods", "GET");
+      res.header("Access-Control-Allow-Headers", req.header('access-control-request-headers'));
+    }
   
     try {
       if (req.method === 'OPTIONS') {
@@ -59,7 +61,8 @@ app.all(`${apiRoute}*`, function (req, res, next) {
           console.log(`${new Date().toISOString()}: ${msg}`, target);
           res.status(400).send(msg);
         } else {
-          console.log(`${new Date().toISOString()}: Try proxy request from ${ip}/${ipFW} to ${target}`);
+          const reqType = origin ? "COORS" : "back-end API";
+          console.log(`${new Date().toISOString()}: Try proxy ${reqType} request from ${ip}/${ipFW} to ${target}`);
 
           request({ url: target, method: req.method, headers: {'accept': req.header('accept')}})
           .on('error', err => {
