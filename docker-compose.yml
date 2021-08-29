@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+  cors-prox:
+    build: 
+      context: .
+      args:
+        - APP_GROUP_UID=4000
+        - APP_USER_UID=4000
+    container_name: cors-prox
+    # "--init" -> use "tini" to avoid running nodejs as PID 1 etc.
+    init: true
+    # limit log files (I tend to do a log of console.log...)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    environment:
+      - PROXY_PORT=3000
+      - PROXY_ALLOW_ORIGINS=[]
+      - PROXY_RL_WINDOW_MS=30000 # 5*60*1000 (5 min)
+      - PROXY_RL_MAX=20          # 20 per 5min (per IP)  
+    ports:
+      - "3000:3000"
