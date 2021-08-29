@@ -50,16 +50,16 @@ app.all(`${apiRoute}*`, function (req, res, next) {
     try {
       if (req.method === 'OPTIONS') {
         // CORS Preflight
-        console.log("OPTIONS / Preflight");
+        console.log(`${new Date().toISOString()}: OPTIONS / Preflight`);
         res.send();
       } else if (req.method === 'GET') {
         const target = encodeURI(req.params[0]);
         if (!target || !validUrl.isHttpsUri(target)) {
           const msg = "There is no valid Target-Endpoint in the request";
-          console.log(msg, target);
+          console.log(`${new Date().toISOString()}: ${msg}`, target);
           res.status(400).send(msg);
         } else {
-          console.log(`Try proxy request from ${ip}/${ipFW} to ${target}`);
+          console.log(`${new Date().toISOString()}: Try proxy request from ${ip}/${ipFW} to ${target}`);
 
           request({ url: target, method: req.method, headers: {'accept': req.header('accept')}})
           .on('error', err => {
@@ -73,7 +73,7 @@ app.all(`${apiRoute}*`, function (req, res, next) {
           .pipe(res);
         }
       } else {
-          console.log("Not GET/OPTIONS", req.method, JSON.stringify(req.headers));
+          console.log(`${new Date().toISOString()}: Not GET/OPTIONS`, req.method, JSON.stringify(req.headers));
           res.set('Allow', 'GET', 'OPTIONS');
           res.send(405, 'Method Not Allowed');      
       }
@@ -84,14 +84,14 @@ app.all(`${apiRoute}*`, function (req, res, next) {
     }
   } else {
     const msg = origin ? `Origin ${origin} not allowed` : "Origin not provided";
-    console.log(`Discard proxy request from ${ip}/${ipFW}`);
+    console.log(`${new Date().toISOString()}: Discard proxy request from ${ip}/${ipFW}`);
     console.error(msg);
     res.status(406).end();
   }  
 });
 
 app.listen(port, () => {
-  console.log(`CORS-proxy running with configuration:`);
+  console.log(`${new Date().toISOString()}: CORS-proxy running with configuration:`);
   console.log(` port/route            : ${port}${apiRoute}`);
   console.log(` rate-limit window/max : ${rateLimitWindowMs}/${rateLimitMax}`);
   console.log(` allow origins         : [${allowOrigins}]`);
