@@ -1,0 +1,17 @@
+{
+  "name": "cors-prox",
+  "version": "1.0.0",
+  "description": "Simple CORS (GET) proxy",
+  "main": "app.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "uivraeus",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-rate-limit": "^5.3.0",
+    "request": "^2.88.2",
+    "valid-url": "^1.0.9"
+  }
+}
