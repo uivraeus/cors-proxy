@@ -23,6 +23,19 @@ const allowOrigins = process.env.PROXY_ALLOW_ORIGINS
     }()
   : [];
 
+const allowedTargetPatterns = process.env.PROXY_ALLOW_TARGET_PATTERNS
+  ? function parseTargetPatterns() {
+      try {
+        const a = JSON.parse(process.env.PROXY_ALLOW_TARGET_PATTERNS);
+        if (!Array.isArray(a)) throw new Error("Wrong type.");
+        return a;
+      } catch(e) {
+        console.error("PROXY_ALLOW_TARGET_PATTERNS not defined as JSON array:\n", e.message);
+        process.exit(1);
+      }
+    }()
+  : [];
+
 //Initialize the (Express) app
 const app = express()
 app.disable('x-powered-by');
@@ -56,7 +69,7 @@ app.all(`${apiRoute}*`, function (req, res, next) {
         res.send();
       } else if (req.method === 'GET') {
         const target = encodeURI(req.params[0]);
-        if (!target || !validUrl.isHttpsUri(target)) {
+        if (!target || !validUrl.isHttpsUri(target) || !isAllowedTarget(target)) {
           const msg = "There is no valid Target-Endpoint in the request";
           console.log(`${new Date().toISOString()}: ${msg}`, target);
           res.status(400).send(msg);
@@ -82,7 +95,7 @@ app.all(`${apiRoute}*`, function (req, res, next) {
       }
     } catch (error) {
       const msg = "Can't connect to target.";
-      console.error(msg, target, error.message);
+      console.error(msg,error.message);
       res.status(500).end();
     }
   } else {
@@ -98,6 +111,7 @@ app.listen(port, () => {
   console.log(` port/route            : ${port}${apiRoute}`);
   console.log(` rate-limit window/max : ${rateLimitWindowMs}/${rateLimitMax}`);
   console.log(` allow origins         : [${allowOrigins}]`);
+  console.log(` allow targets         : [${allowedTargetPatterns}]`);
 })
 
 //Helper for deriving the applicable Allow-origin (or null if actually not allowed)
@@ -110,6 +124,20 @@ const isAllowedOrigin = (origin) => {
 
   //Otherwise, check if origin included in the list
   if (allowOrigins.findIndex(o => o === origin) !== -1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+const isAllowedTarget = (target) => {
+  //Incorrect request -> deny
+  if (!target) return false;
+  
+  //Valid request, when we haven't limited usage
+  if (allowedTargetPatterns.length === 0) return true;
+
+  if (allowedTargetPatterns.findIndex(t => RegExp(t).test(target)) !== -1) {
     return true;
   } else {
     return false;

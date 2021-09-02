@@ -20,6 +20,7 @@ services:
     environment:
       - PROXY_PORT=3000
       - PROXY_ALLOW_ORIGINS=[]
+      - PROXY_ALLOW_TARGET_PATTERNS=["https://example.com/songs/.*\\.mp3"]
       - PROXY_RL_WINDOW_MS=30000 # 5*60*1000 (5 min)
       - PROXY_RL_MAX=20          # 20 per 5min (per IP)  
     ports:
