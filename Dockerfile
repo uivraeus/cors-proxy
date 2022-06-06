@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:18-alpine
 
 COPY ./package.json /cors-prox/
 COPY ./package-lock.json /cors-prox/
