@@ -67,7 +67,7 @@ function serveClientReq(clientReq, clientRes) {
         // CORS Preflight
         resEnd(200)
       } else if (method === "GET") {
-        const reqType = origin ? "COORS" : "back-end API";
+        const reqType = origin ? "CORS" : "back-end API";
         console.log(`${utc()}: Try proxy ${reqType} request from ${clientIp} to ${target}`);
         fwdGetRequest(clientReq, target, clientRes);
       }
